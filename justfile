@@ -5,6 +5,7 @@ dev:
 
 # for github pages
 page:
+  rm index.html index.*.js
   rm -rf dist/
   parcel build --no-optimize src/index.html
   sd 'src="/(index.*js)"' 'src="/elm-syntax-in-json/$1"' dist/index.html
