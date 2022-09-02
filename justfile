@@ -4,7 +4,7 @@ dev:
   parcel serve --open --port 5000 src/index.html
 
 build:
-  parcel build src/index.html
+  parcel build --no-optimize src/index.html
 
 # Local Variables:
 # mode: makefile
