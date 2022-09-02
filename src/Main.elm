@@ -8,8 +8,8 @@ import Browser
 import Css
 import Dict
 import Elm.Parser
-import Html.Styled exposing (button, div, h3, pre, text, textarea)
-import Html.Styled.Attributes exposing (css, value)
+import Html.Styled exposing (a, button, div, h3, pre, text, textarea)
+import Html.Styled.Attributes exposing (css, href, value)
 import Html.Styled.Events exposing (onClick, onInput)
 import Json.Decode
 import Json.Encode
@@ -42,6 +42,7 @@ parse =
                 >> (++) tag
     in
     Elm.Parser.parse
+        >> Result.map (Debug.log "parsed")
         >> Result.map (addTag tagSuccess)
         >> Result.Extra.extract (addTag tagFailure)
         >> toJS
@@ -120,6 +121,12 @@ view model =
     div []
         [ h3 [] [ text "Write some elm code to be parsed by elm-syntax" ]
         , viewInputArea model
+        , div [ css [ Css.marginTop <| Css.px 12 ] ]
+            [ a
+                [ href "https://github.com/kraklin/elm-debug-transformer#enable-custom-formatters-in-chrome-dev-tools"
+                ]
+                [ text "Hint: Consider use chrome and enable custom console formatter and then check output in console." ]
+            ]
         , viewJsonTree model
         ]
 
