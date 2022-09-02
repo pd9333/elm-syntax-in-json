@@ -1,7 +1,8 @@
 {
   "private": true,
   "version": "0.0.0",
-  "dependencies": {},
-  "devDependencies": {},
+  "devDependencies": {
+    "parcel": "^2.7.0"
+  },
   "scripts": {}
 }
