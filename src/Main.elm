@@ -22,11 +22,27 @@ port toJS : String -> Cmd msg
 port fromJS : (Json.Encode.Value -> msg) -> Sub msg
 
 
+tagSuccess : String
+tagSuccess =
+    "Success"
+
+
+tagFailure : String
+tagFailure =
+    "Failure"
+
+
 parse : String -> Cmd msg
 parse =
+    let
+        addTag tag =
+            Debug.toString
+                >> (++) ": "
+                >> (++) tag
+    in
     Elm.Parser.parse
-        >> Result.map (Debug.toString >> (++) "Success: ")
-        >> Result.Extra.extract (Debug.toString >> (++) "Failed: ")
+        >> Result.map (addTag tagSuccess)
+        >> Result.Extra.extract (addTag tagFailure)
         >> toJS
 
 
