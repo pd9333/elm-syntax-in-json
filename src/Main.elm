@@ -1,7 +1,25 @@
 module Main exposing (main)
 
 import Browser
+import Elm.Parser
 import Html.Styled exposing (text)
+
+
+src =
+    """module Foo exposing(foo)
+
+foo = 1
+"""
+
+
+parse : String -> String
+parse input =
+    case Elm.Parser.parse input of
+        Err e ->
+            "Failed: " ++ Debug.toString e
+
+        Ok v ->
+            "Success: " ++ Debug.toString v
 
 
 type alias Flags =
@@ -37,7 +55,7 @@ update msg model =
 
 view : Model -> Html.Styled.Html Msg
 view model =
-    text "Hello World!"
+    text <| parse src
 
 
 subscriptions : Model -> Sub Msg
