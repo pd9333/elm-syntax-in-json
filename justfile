@@ -1,7 +1,7 @@
 #!/usr/bin/env just --justfile
 
 dev:
-  parcel src/index.html
+  parcel serve --open --port 5000 src/index.html
 
 build:
   parcel build src/index.html
