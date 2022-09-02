@@ -42,7 +42,8 @@ parse =
                 >> (++) tag
     in
     Elm.Parser.parse
-        >> Result.map (Debug.log "parsed")
+        >> Result.map (Debug.log tagSuccess)
+        >> Result.mapError (Debug.log tagFailure)
         >> Result.map (addTag tagSuccess)
         >> Result.Extra.extract (addTag tagFailure)
         >> toJS
