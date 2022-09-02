@@ -7,10 +7,12 @@ port module Main exposing
 import Browser
 import Css
 import Elm.Parser
-import Html.Styled exposing (button, div, h3, text, textarea)
+import Html.Styled exposing (button, div, h3, pre, text, textarea)
 import Html.Styled.Attributes exposing (css, value)
 import Html.Styled.Events exposing (onClick, onInput)
+import Json.Decode
 import Json.Encode
+import JsonTree
 import Result.Extra
 
 
@@ -25,7 +27,6 @@ parse =
     Elm.Parser.parse
         >> Result.map (Debug.toString >> (++) "Success: ")
         >> Result.Extra.extract (Debug.toString >> (++) "Failed: ")
-        >> Debug.log "parse"
         >> toJS
 
 
@@ -34,13 +35,17 @@ type alias Flags =
 
 
 type alias Model =
-    { input : String }
+    { input : String
+    , parsed : Result String JsonTree.Node
+    , treeState : JsonTree.State
+    }
 
 
 type Msg
     = OnInput String
     | OnParse
     | OnValueFromJS Json.Encode.Value
+    | OnJsonTreeState JsonTree.State
 
 
 main : Program Flags Model Msg
@@ -55,9 +60,18 @@ main =
 
 init : Flags -> ( Model, Cmd Msg )
 init _ =
-    ( { input = ""
+    let
+        input =
+            """module Foo exposing(foo)
+
+foo = 1
+"""
+    in
+    ( { input = input
+      , parsed = Err "Waiting for input..."
+      , treeState = JsonTree.defaultState
       }
-    , Cmd.none
+    , parse input
     )
 
 
@@ -65,11 +79,14 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         OnValueFromJS value ->
-            let
-                _ =
-                    Debug.log "value from JS" value
-            in
-            ( model, Cmd.none )
+            ( { model
+                | parsed =
+                    value
+                        |> JsonTree.parseValue
+                        |> Result.mapError Json.Decode.errorToString
+              }
+            , Cmd.none
+            )
 
         OnInput input ->
             ( { model | input = input }, Cmd.none )
@@ -77,21 +94,25 @@ update msg model =
         OnParse ->
             ( model, parse model.input )
 
+        OnJsonTreeState treeState ->
+            ( { model | treeState = treeState }, Cmd.none )
+
 
 view : Model -> Html.Styled.Html Msg
 view model =
     div []
         [ h3 [] [ text "Write some elm code to be parsed by elm-syntax" ]
         , viewInputArea model
+        , viewJsonTree model
         ]
 
 
 viewInputArea : { a | input : String } -> Html.Styled.Html Msg
-viewInputArea model =
+viewInputArea { input } =
     div []
         [ h3 [] [ text "Elm source code" ]
         , textarea
-            [ value model.input
+            [ value input
             , onInput OnInput
             , css
                 [ Css.width (Css.px 400)
@@ -101,6 +122,25 @@ viewInputArea model =
             ]
             []
         , div [] [ button [ onClick OnParse ] [ text "Parse" ] ]
+        ]
+
+
+viewJsonTree : { a | parsed : Result String JsonTree.Node, treeState : JsonTree.State } -> Html.Styled.Html Msg
+viewJsonTree model =
+    div []
+        [ h3 [] [ text "JSON Tree View" ]
+        , case model.parsed of
+            Ok rootNode ->
+                JsonTree.view rootNode
+                    { colors = JsonTree.defaultColors
+                    , onSelect = Nothing
+                    , toMsg = OnJsonTreeState
+                    }
+                    model.treeState
+                    |> Html.Styled.fromUnstyled
+
+            Err e ->
+                pre [] [ text ("Invalid JSON: " ++ e) ]
         ]
 
 
