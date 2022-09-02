@@ -4,6 +4,7 @@
   "devDependencies": {
     "@parcel/transformer-elm": "^2.7.0",
     "elm": "^0.19.1-5",
+    "elm-debug-transformer": "^1.1.2",
     "parcel": "^2.7.0"
   },
   "scripts": {}
