@@ -6,6 +6,7 @@ port module Main exposing
 
 import Browser
 import Css
+import Dict
 import Elm.Parser
 import Html.Styled exposing (button, div, h3, pre, text, textarea)
 import Html.Styled.Attributes exposing (css, value)
@@ -143,7 +144,30 @@ viewInputArea { input } =
 
 viewJsonTree : { a | parsed : Result String JsonTree.Node, treeState : JsonTree.State } -> Html.Styled.Html Msg
 viewJsonTree model =
-    div []
+    let
+        backgroundColor =
+            model.parsed
+                |> Result.toMaybe
+                |> Maybe.andThen
+                    (\node ->
+                        case node.value of
+                            JsonTree.TDict dict ->
+                                Dict.get "name" dict
+                                    |> Maybe.map (.value >> (==) (JsonTree.TString tagSuccess))
+
+                            _ ->
+                                Nothing
+                    )
+                |> Maybe.withDefault False
+                |> (\succeed ->
+                        if succeed then
+                            []
+
+                        else
+                            [ css [ Css.backgroundColor <| Css.rgb 232 188 206 ] ]
+                   )
+    in
+    div ([] ++ backgroundColor)
         [ h3 [] [ text "JSON Tree View" ]
         , case model.parsed of
             Ok rootNode ->
