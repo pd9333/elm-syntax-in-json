@@ -1,6 +1,7 @@
 #!/usr/bin/env just --justfile
 
 dev:
+  rm -rf dist/
   parcel serve --open --port 5000 src/index.html
 
 # for github pages
